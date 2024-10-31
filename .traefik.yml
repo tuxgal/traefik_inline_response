@@ -1,0 +1,37 @@
+displayName: Inline Response Plugin
+type: middleware
+import: github.com/tuxgal/traefik_inline_response
+summary: A highly configurable Traefik middleware plugin that can be used to return a response inline based on the configuration without any backend / service. Responses can be configured based on absolute, prefix or regex based paths. Response status code, headers and body can be configured per matcher rule. The response body can also be dynamically generated based on go templates based on the request.
+testData:
+  matchers:
+    - path:
+        abs: /foo1
+      statusCode: 404
+      response:
+        raw: Not-Found-foo1
+    - path:
+        prefix: /foobar
+      statusCode: 200
+      response:
+        json:
+          f1: v1
+          f2: 23
+          f3:
+            f4: 567
+            f5:
+              - f6: v2
+                f7: v3
+              - f8: v4
+                f9: 890
+    - path:
+        regex: '^.*/foo/bar/.*$'
+      statusCode: 403
+      response:
+        template: '{{ .Method }}-{{ .URL.Scheme }}-{{ .URL.Host }}-{{ .URL.Path }}'
+    - path:
+        regex: '^/foo2/.+$'
+      statusCode: 409
+  fallback:
+    statusCode: 204
+    response:
+      template: '{{ .Proto }}-{{ .URL.Path }}'
