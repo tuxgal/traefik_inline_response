@@ -1,0 +1,106 @@
+version: 2
+before:
+  hooks:
+    # Run all pre-checks before goreleaser cuts a release.
+    - make goreleaser_verify
+builds:
+  - env:
+      - GO111MODULE=on
+      # Disable CGO (i.e. binary will be statically linked).
+      - CGO_ENABLED=0
+
+    flags:
+      # Trim the path for reproducible builds.
+      - -trimpath
+    ldflags:
+      # Strip debugging symbols.
+      - -s -w
+      # Include version and commit information (uses commit date for
+      # reproducible builds).
+      - -X main.pkgVersion={{.Env.GO_PKG_VERSION}}
+      - -X main.pkgCommit={{.Env.GO_PKG_COMMIT}}
+      - -X main.pkgTimestamp={{.Env.GO_PKG_DATE}}
+    # Use the commit timestamp as the binary's modified timestamp.
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    # Set to true only for library projects.
+    skip: true
+    # Target platform and architectures.
+    targets:
+      - linux_amd64
+      - linux_386
+      - linux_arm64
+      - linux_arm_6
+      - linux_arm_7
+      - darwin_amd64
+      - darwin_arm64
+      - windows_amd64
+      - windows_386
+      - windows_arm64
+      - windows_arm_6
+      - windows_arm_7
+archives:
+  # Package in tar.xz format except for Windows (uses .zip instead).
+  - format: tar.xz
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Env.GO_PKG_VERSION }}_
+      {{- if eq .Os "darwin" }}macOS{{ else }}{{ title .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "386" }}i386{{ else }}{{ .Arch }}{{ end }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+universal_binaries:
+  # Build a universal fat binary for macOS (i.e. build a single binary
+  # which contains the binaries for all architectures under macOS) packaged
+  # into a single archive, and delete the other single architecture macOS
+  # archives.
+  - replace: true
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-{{ .Env.GO_PKG_VERSION }}-src"
+  format: tar.gz
+checksum:
+  # Checksum configuration.
+  name_template: 'checksums.txt'
+  algorithm: sha256
+signs:
+  - signature: "${artifact}.sig"
+    cmd: gpg
+    args:
+      - "-u"
+      - "1856E0777ADFF1E9"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+    artifacts: all
+gomod:
+  # Load dependencies using proxy.golang.org to create a verifiable build.
+  proxy: true
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+  gobinary: go
+snapshot:
+  # Custom naming for snapshot builds.
+  version_template: "{{ .Env.GO_PKG_VERSION }}-dev-{{ .ShortCommit }}"
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  draft: false
+  discussion_category_name: Releases
+  prerelease: auto
+  mode: keep-existing
+  header: |
+    ## Released {{ time "Mon, Jan 2 2006 03:04 PM UTC-0700" }}
+    {{ .TagSubject }}
+    {{ .TagBody }}
+  footer: |
+    ## Thanks!
+    Those include all the new changes in the {{ .Tag }} release!
+  name_template: "{{.ProjectName}} {{.Env.GO_PKG_VERSION}}"
