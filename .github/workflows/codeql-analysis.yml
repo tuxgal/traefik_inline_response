@@ -1,0 +1,87 @@
+---
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron: '00 03 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-os-matrix:
+    name: Generate OS Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch full annotated tags metadata
+        run: git fetch --force --tags
+
+      - name: Set up makesystem
+        run: make makesystem_install
+
+      - id: set-os-matrix
+        run: make github_dump_codeql_os_matrix
+
+  codeql:
+    name: CodeQL
+    needs: generate-os-matrix
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - go
+        os:  ${{fromJSON(needs.generate-os-matrix.outputs.os-matrix)}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch full annotated tags metadata
+        run: git fetch --force --tags
+
+      - name: Set up makesystem
+        run: make makesystem_install
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

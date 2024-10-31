@@ -1,0 +1,82 @@
+---
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron: '00 03 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-os-matrix:
+    name: Generate OS Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch full annotated tags metadata
+        run: git fetch --force --tags
+
+      - name: Set up makesystem
+        run: make makesystem_install
+
+      - id: set-os-matrix
+        run: make github_dump_tests_os_matrix
+
+  tests:
+    name: Tests
+    needs: generate-os-matrix
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:  ${{fromJSON(needs.generate-os-matrix.outputs.os-matrix)}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch full annotated tags metadata
+        run: git fetch --force --tags
+
+      - name: Set up makesystem
+        run: make makesystem_install
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23
+
+      - name: Run Tests with Coverage generation (Linux/ OSX)
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: make coverage
+
+      - name: Run Tests without Coverage generation (Windows)
+        # No Makefile support on Windows, also coverage
+        # generation command fails on Windows.
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: go test -v ./...
