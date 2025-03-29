@@ -313,7 +313,7 @@ matchers:
   - path:
       abs: /foo
 `,
-		want: `Must specify a status code in the matcher`,
+		want: `must specify a status code in the matcher`,
 	},
 	{
 		name: "Matcher With Both Absolute Path And Path Prefix",
@@ -324,7 +324,7 @@ matchers:
       prefix: /bar
     statusCode: 404
 `,
-		want: `Cannot specify path prefix when absolute path is specified`,
+		want: `cannot specify path prefix when absolute path is specified`,
 	},
 	{
 		name: "Matcher With Both Absolute Path And Path Regex",
@@ -335,7 +335,7 @@ matchers:
       regex: '^.+$'
     statusCode: 404
 `,
-		want: `Cannot specify path regex when absolute path is specified`,
+		want: `cannot specify path regex when absolute path is specified`,
 	},
 	{
 		name: "Matcher With Both Path Prefix And Path Regex",
@@ -346,7 +346,7 @@ matchers:
       regex: '^.+$'
     statusCode: 404
 `,
-		want: `Cannot specify path regex when path prefix is specified`,
+		want: `cannot specify path regex when path prefix is specified`,
 	},
 	{
 		name: "Matcher With No Path",
@@ -355,7 +355,7 @@ matchers:
   - path: {}
     statusCode: 404
 `,
-		want: `At least one of absoltue path, path prefix or path regex must be specified`,
+		want: `at least one of absoltue path, path prefix or path regex must be specified`,
 	},
 	{
 		name: "Matcher With Invalid Path Regex",
@@ -365,7 +365,7 @@ matchers:
       regex: '*'
     statusCode: 404
 `,
-		want: "Invalid regex in matcher path, reason: error parsing regexp: missing argument to repetition operator: `*`",
+		want: "invalid regex in matcher path, reason: error parsing regexp: missing argument to repetition operator: `*`",
 	},
 	{
 		name: "Matcher Response With Both Raw And Template",
@@ -378,7 +378,7 @@ matchers:
       template: '{{ .URL.Path }}'
     statusCode: 404
 `,
-		want: `Cannot specify template in matcher response when raw is specified`,
+		want: `cannot specify template in matcher response when raw is specified`,
 	},
 	{
 		name: "Matcher Response With Both Raw And JSON",
@@ -392,7 +392,7 @@ matchers:
         abc: def
     statusCode: 404
 `,
-		want: `Cannot specify json in matcher response when raw is specified`,
+		want: `cannot specify json in matcher response when raw is specified`,
 	},
 	{
 		name: "Matcher Response With Both Template And JSON",
@@ -406,7 +406,7 @@ matchers:
         abc: def
     statusCode: 404
 `,
-		want: `Cannot specify json in matcher response when template is specified`,
+		want: `cannot specify json in matcher response when template is specified`,
 	},
 	{
 		name: "Matcher Response With Invalid Template",
@@ -418,14 +418,14 @@ matchers:
       template: '{{ .URL.Path'
     statusCode: 404
 `,
-		want: `Invalid template in matcher response, reason: template: traefik-inline-response:1: unclosed action`,
+		want: `invalid template in matcher response, reason: template: traefik-inline-response:1: unclosed action`,
 	},
 	{
 		name: "Fallback Without Status Code",
 		config: `
 fallback: {}
 `,
-		want: `Must specify a status code in the fallback`,
+		want: `must specify a status code in the fallback`,
 	},
 	{
 		name: "Fallback Response With Both Raw And Template",
@@ -436,7 +436,7 @@ fallback:
     template: '{{ .URL.Path }}'
   statusCode: 404
 `,
-		want: `Cannot specify template in fallback response when raw is specified`,
+		want: `cannot specify template in fallback response when raw is specified`,
 	},
 	{
 		name: "Fallback Response With Both Raw And JSON",
@@ -448,7 +448,7 @@ fallback:
       abc: def
   statusCode: 404
 `,
-		want: `Cannot specify json in fallback response when raw is specified`,
+		want: `cannot specify json in fallback response when raw is specified`,
 	},
 	{
 		name: "Fallback Response With Both Template And JSON",
@@ -460,7 +460,7 @@ fallback:
       abc: def
   statusCode: 404
 `,
-		want: `Cannot specify json in fallback response when template is specified`,
+		want: `cannot specify json in fallback response when template is specified`,
 	},
 	{
 		name: "Fallback Response With Invalid Template",
@@ -470,7 +470,7 @@ fallback:
     template: '{{ .URL.Path'
   statusCode: 404
 `,
-		want: `Invalid template in fallback response, reason: template: traefik-inline-response:1: unclosed action`,
+		want: `invalid template in fallback response, reason: template: traefik-inline-response:1: unclosed action`,
 	},
 }
 
@@ -502,6 +502,7 @@ func TestHandlerValidationErrors(t *testing.T) {
 }
 
 func readBody(data io.ReadCloser) (string, error) {
+	//nolint:errcheck
 	defer data.Close()
 
 	b, err := io.ReadAll(data)

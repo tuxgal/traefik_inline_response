@@ -102,7 +102,7 @@ func (c *Config) validate() (*handlerRuntime, error) {
 	rt := &handlerRuntime{}
 	for _, m := range c.Matchers {
 		if m.StatusCode == nil {
-			return nil, fmt.Errorf("Must specify a status code in the matcher")
+			return nil, fmt.Errorf("must specify a status code in the matcher")
 		}
 
 		p, err := validatePath(&m.Path)
@@ -136,16 +136,16 @@ func validatePath(path *Path) (*pathRuntime, error) {
 
 	if path.Abs != nil {
 		if path.Prefix != nil {
-			return nil, fmt.Errorf("Cannot specify path prefix when absolute path is specified")
+			return nil, fmt.Errorf("cannot specify path prefix when absolute path is specified")
 		}
 		if path.Regex != nil {
-			return nil, fmt.Errorf("Cannot specify path regex when absolute path is specified")
+			return nil, fmt.Errorf("cannot specify path regex when absolute path is specified")
 		}
 		p.mode = pathMatcherModeAbsolutePath
 		p.abs = path.Abs
 	} else if path.Prefix != nil {
 		if path.Regex != nil {
-			return nil, fmt.Errorf("Cannot specify path regex when path prefix is specified")
+			return nil, fmt.Errorf("cannot specify path regex when path prefix is specified")
 		}
 		p.mode = pathMatcherModePrefix
 		p.prefix = path.Prefix
@@ -153,12 +153,12 @@ func validatePath(path *Path) (*pathRuntime, error) {
 		p.mode = pathMatcherModeRegex
 		regex, err := regexp.Compile(*path.Regex)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid regex in matcher path, reason: %w", err)
+			return nil, fmt.Errorf("invalid regex in matcher path, reason: %w", err)
 		}
 		p.mode = pathMatcherModeRegex
 		p.regex = regex
 	} else {
-		return nil, fmt.Errorf("At least one of absoltue path, path prefix or path regex must be specified")
+		return nil, fmt.Errorf("at least one of absoltue path, path prefix or path regex must be specified")
 	}
 
 	return p, nil
@@ -169,27 +169,27 @@ func validateResponse(resp *Response, loc string) (*responseRuntime, error) {
 
 	if resp.Raw != nil {
 		if resp.Template != nil {
-			return nil, fmt.Errorf("Cannot specify template in %s response when raw is specified", loc)
+			return nil, fmt.Errorf("cannot specify template in %s response when raw is specified", loc)
 		}
 		if resp.JSON != nil {
-			return nil, fmt.Errorf("Cannot specify json in %s response when raw is specified", loc)
+			return nil, fmt.Errorf("cannot specify json in %s response when raw is specified", loc)
 		}
 		r.mode = responseModeRaw
 		r.raw = *resp.Raw
 	} else if resp.Template != nil {
 		if resp.JSON != nil {
-			return nil, fmt.Errorf("Cannot specify json in %s response when template is specified", loc)
+			return nil, fmt.Errorf("cannot specify json in %s response when template is specified", loc)
 		}
 		templ, err := template.New("traefik-inline-response").Parse(*resp.Template)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid template in %s response, reason: %w", loc, err)
+			return nil, fmt.Errorf("invalid template in %s response, reason: %w", loc, err)
 		}
 		r.mode = responseModeTemplate
 		r.templ = templ
 	} else if resp.JSON != nil {
 		b, err := json.Marshal(*resp.JSON)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid JSON in %s response, reason: %w", loc, err)
+			return nil, fmt.Errorf("invalid JSON in %s response, reason: %w", loc, err)
 		}
 		r.mode = responseModeJSON
 		r.json = string(b)
@@ -206,7 +206,7 @@ func validateFallback(fallback *Fallback) (*fallbackRuntime, error) {
 	}
 
 	if fallback.StatusCode == nil {
-		return nil, fmt.Errorf("Must specify a status code in the fallback")
+		return nil, fmt.Errorf("must specify a status code in the fallback")
 	}
 
 	r, err := validateResponse(&fallback.Resp, "fallback")
@@ -233,7 +233,8 @@ func prettyPrintJSON(x interface{}) string {
 
 func log(debug bool, format string, args ...interface{}) {
 	if debug {
-		os.Stdout.WriteString(fmt.Sprintf("traefik-inline-response - "+format+"\n", args...))
+		//nolint:errcheck
+		fmt.Fprintf(os.Stdout, "%s", fmt.Sprintf("traefik-inline-response - "+format+"\n", args...))
 	}
 }
 
