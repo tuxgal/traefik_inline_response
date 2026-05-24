@@ -46,7 +46,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.25
+          go-version: 1.26
 
       - name: Generate Artifact Name
         id: generate-artifact-name
@@ -55,7 +55,7 @@ jobs:
         shell: bash
 
       - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: '~> v2'
@@ -65,7 +65,7 @@ jobs:
         run: make goreleaser_snapshot_release_skip_signing
 
       - name: Upload Snapshot Release to Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.generate-artifact-name.outputs.artifact }}
           path: |

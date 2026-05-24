@@ -36,16 +36,16 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.25
+          go-version: 1.26
 
       - name: Import Release Signing GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.RELEASE_SIGNING_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.RELEASE_SIGNING_GPG_PASSPHRASE }}
 
       - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: '~> v2'
