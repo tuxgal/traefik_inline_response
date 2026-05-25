@@ -38,7 +38,8 @@ builds:
       - windows_arm64
 archives:
   # Package in tar.xz format except for Windows (uses .zip instead).
-  - format: tar.xz
+  - formats:
+      - tar.xz
     name_template: >-
       {{- .ProjectName }}_
       {{- .Env.GO_PKG_VERSION }}_
@@ -46,7 +47,8 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "386" }}i386{{ else }}{{ .Arch }}{{ end }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 universal_binaries:
   # Build a universal fat binary for macOS (i.e. build a single binary
   # which contains the binaries for all architectures under macOS) packaged
