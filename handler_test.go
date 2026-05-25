@@ -188,7 +188,7 @@ matchers:
       regex: '^/foo2/.+$'
     statusCode: 409
 fallback:
-  statusCode: 204
+  statusCode: 202
   response:
     template: '{{ .Proto }}-{{ .URL.Path }}'
 `,
@@ -198,7 +198,7 @@ fallback:
 				method: http.MethodGet,
 				url:    "http://localhost/foo3",
 				want: &testResponse{
-					statusCode: http.StatusNoContent,
+					statusCode: http.StatusAccepted,
 					body:       "HTTP/1.1-/foo3",
 				},
 			},
